@@ -210,52 +210,50 @@ class KittiDataClosestVehicleTest(data_testing_lib.BaseVTABDataTest):
 class TestPreprocessing(tf.test.TestCase):
 
   def test_count_vehicles(self):
-    sess = tf.Session()
     x = {"image": tf.constant([0])}
     x["objects"] = {"type": tf.constant([0])}
-    self.assertEqual(1, sess.run(kitti._count_vehicles_pp(x)["label"]))
+    self.assertEqual(1, self.evaluate(kitti._count_vehicles_pp(x)["label"]))
     x["objects"] = {"type": tf.constant([3])}
-    self.assertEqual(0, sess.run(kitti._count_vehicles_pp(x)["label"]))
+    self.assertEqual(0, self.evaluate(kitti._count_vehicles_pp(x)["label"]))
     x["objects"] = {"type": tf.constant([0, 1])}
-    self.assertEqual(2, sess.run(kitti._count_vehicles_pp(x)["label"]))
+    self.assertEqual(2, self.evaluate(kitti._count_vehicles_pp(x)["label"]))
     x["objects"] = {"type": tf.constant([0, 1, 2])}
-    self.assertEqual(3, sess.run(kitti._count_vehicles_pp(x)["label"]))
+    self.assertEqual(3, self.evaluate(kitti._count_vehicles_pp(x)["label"]))
     x["objects"] = {"type": tf.constant([0, 1, 2, 2, 2, 2, 2])}
-    self.assertEqual(3, sess.run(kitti._count_vehicles_pp(x)["label"]))
+    self.assertEqual(3, self.evaluate(kitti._count_vehicles_pp(x)["label"]))
 
   def test_closest_vehicle(self):
-    sess = tf.Session()
     x = {"image": tf.constant([0])}
     x["objects"] = {
         "type": tf.constant([0]),
         "location": tf.constant([[0.0, 0.0, 1.0]]),
     }
     self.assertEqual(0,
-                     sess.run(kitti._closest_vehicle_distance_pp(x)["label"]))
+                     self.evaluate(kitti._closest_vehicle_distance_pp(x)["label"]))
     x["objects"] = {
         "type": tf.constant([0]),
         "location": tf.constant([[0.0, 0.0, 10.0]]),
     }
     self.assertEqual(1,
-                     sess.run(kitti._closest_vehicle_distance_pp(x)["label"]))
+                     self.evaluate(kitti._closest_vehicle_distance_pp(x)["label"]))
     x["objects"] = {
         "type": tf.constant([0]),
         "location": tf.constant([[0.0, 0.0, 30.0]]),
     }
     self.assertEqual(2,
-                     sess.run(kitti._closest_vehicle_distance_pp(x)["label"]))
+                     self.evaluate(kitti._closest_vehicle_distance_pp(x)["label"]))
     x["objects"] = {
         "type": tf.constant([4]),
         "location": tf.constant([[0.0, 0.0, 30.0]]),
     }
     self.assertEqual(3,
-                     sess.run(kitti._closest_vehicle_distance_pp(x)["label"]))
+                     self.evaluate(kitti._closest_vehicle_distance_pp(x)["label"]))
     x["objects"] = {
         "type": tf.constant([0, 1]),
         "location": tf.constant([[0.0, 0.0, 30.0], [0.0, 0.0, 1.0]]),
     }
     self.assertEqual(0,
-                     sess.run(kitti._closest_vehicle_distance_pp(x)["label"]))
+                     self.evaluate(kitti._closest_vehicle_distance_pp(x)["label"]))
 
 
 if __name__ == "__main__":

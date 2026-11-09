@@ -129,6 +129,11 @@ class BaseDataTest(tf.test.TestCase):
 
   @classmethod
   def iterate_dataset(cls, dataset, session):
+    if tf.executing_eagerly():
+      # TF2 runs tests eagerly, where initializable iterators are unsupported.
+      for element in dataset.as_numpy_iterator():
+        yield element
+      return
     dataset_iter = tf.compat.v1.data.make_initializable_iterator(dataset)
     get_next = dataset_iter.get_next()
     try:

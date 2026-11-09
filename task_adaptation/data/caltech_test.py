@@ -54,15 +54,9 @@ class Caltech101Test(data_testing_lib.BaseVTABDataTest):
     # least one in the training set.
     ds = self.dataset.get_tf_data("val", batch_size=1, epochs=1)
     ds.repeat(1)
-    next_element = tf.data.make_one_shot_iterator(ds).get_next()
     class_count = collections.defaultdict(int)
-    with tf.Session() as sess:
-      while True:
-        try:
-          value = sess.run(next_element)
-          class_count[value["label"][0]] += 1
-        except tf.errors.OutOfRangeError:
-          break
+    for value in data_testing_lib.BaseDataTest.iterate_dataset(ds, None):
+      class_count[value["label"][0]] += 1
 
     self.assertGreater(30, max(class_count.values()))
 

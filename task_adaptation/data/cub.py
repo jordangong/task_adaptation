@@ -30,7 +30,7 @@ class CUB2011Data(base.ImageTfdsData):
   """Caltech Birds (CUB) 2011 dataset."""
 
   def __init__(self, data_dir=None):
-    dataset_builder = tfds.builder("caltech_birds2011:0.1.1", data_dir=data_dir)
+    dataset_builder = tfds.builder("caltech_birds2011:0.2.0", data_dir=data_dir)
 
     tfds_splits = {
         "train": "train[:{}%]".format(TRAIN_SPLIT_PERCENT),

@@ -31,9 +31,11 @@ class Sun397Test(data_testing_lib.BaseVTABDataTest):
         data_wrapper=sun397.Sun397Data(config="tfds"),
         num_classes=397,
         expected_num_samples=dict(
-            train=76128,
+            # Current TFDS skips one badly encoded train image
+            # (sun_aophkoiosslinihb.jpg), so 76127 rather than the original 76128.
+            train=76127,
             val=10875,
-            trainval=10875 + 76128,
+            trainval=10875 + 76127,
             test=21750,
             train800val200=1000,
             train800=800,

@@ -32,13 +32,14 @@ setup(
     scripts=['task_adaptation/adapt_and_eval.py'],
     install_requires=[
         'absl-py',
-        'numpy',
+        'numpy>=1.26,<2.4',  # TFDS smallnorb breaks on numpy>=2.4.
         'six',
         'mock',
         'tensorflow',
         'tfds-nightly',
+        'protobuf>=6.31.1,<7',  # TFDS dataset_info breaks on protobuf 7.
+        'importlib_resources',  # Needed by TFDS downloads.
         'tensorflow-hub',
-        'tensorflow_addons',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',

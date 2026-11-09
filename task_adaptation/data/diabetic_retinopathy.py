@@ -21,8 +21,40 @@ from __future__ import print_function
 import task_adaptation.data.base as base
 from task_adaptation.registry import Registry
 import tensorflow.compat.v1 as tf
-import tensorflow_addons.image as tfa_image
 import tensorflow_datasets as tfds
+
+
+def _matrix_to_flat_transform(matrix):
+  """Converts a 3x3 projective matrix into TF's 8-element flat transform.
+
+  Equivalent to `tfa.image.transform_ops.matrices_to_flat_transforms` for a
+  single matrix (tensorflow_addons is no longer compatible with TF >= 2.16).
+  """
+  matrix = tf.reshape(matrix, [9])
+  return matrix[:8] / matrix[8]
+
+
+def _apply_projective_transform(image, transform):
+  """Applies a flat projective transform to a rank-2 or rank-3 image.
+
+  Equivalent to `tfa.image.transform` with its defaults (nearest-neighbour
+  interpolation, constant zero fill, output shape equal to the input shape).
+  """
+  rank = len(image.get_shape().as_list())
+  if rank == 2:
+    images = image[tf.newaxis, :, :, tf.newaxis]
+  else:
+    images = image[tf.newaxis]
+  output = tf.raw_ops.ImageProjectiveTransformV3(
+      images=images,
+      transforms=tf.cast(transform, tf.float32)[tf.newaxis],
+      output_shape=tf.shape(images)[1:3],
+      fill_value=tf.constant(0.0, dtype=tf.float32),
+      interpolation="NEAREST",
+      fill_mode="CONSTANT")
+  if rank == 2:
+    return output[0, :, :, 0]
+  return output[0]
 
 
 @Registry.register("data.diabetic_retinopathy", "class")
@@ -177,15 +209,14 @@ class RetinopathyData(base.ImageTfdsData):
                      [c10, c11, (1.0 - c11) * cy - c10 * cx + dy],
                      [0.0, 0.0, 1.0]]
     affine_matrix = tf.convert_to_tensor(affine_matrix, dtype=tf.float32)
-    transform = tfa_image.transform_ops.matrices_to_flat_transforms(
-        tf.linalg.inv(affine_matrix))
+    transform = _matrix_to_flat_transform(tf.linalg.inv(affine_matrix))
     if self._config in self._CONFIGS_WITH_GREY_BACKGROUND:
       # Since background is grey in these configs, put in pixels in [-1, 1]
       # range to avoid artifacts from the affine transformation.
       image = tf.cast(image, dtype=tf.float32)
       image = (image / 127.5) - 1.0
     # Apply the affine transformation.
-    image = tfa_image.transform(images=image, transforms=transform)
+    image = _apply_projective_transform(image, transform)
     if self._config in self._CONFIGS_WITH_GREY_BACKGROUND:
       # Put pixels back to [0, 255] range and cast to uint8, since this is what
       # our preprocessing pipeline usually expects.
